@@ -2,7 +2,6 @@ package com.gft.socialbooks.resources;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
@@ -26,7 +25,6 @@ import com.gft.socialbooks.services.LivrosService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 @Api(tags = "Livros")
 @RestController
@@ -45,7 +43,8 @@ public class LivrosResources {
 	@ApiOperation("Salva um livro")
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<Void> salvar(
-			@ApiParam(name = "corpo", value = "salva um livro") @Valid @RequestBody Livro livro) {
+//			@ApiParam(name = "corpo", value = "salva um livro")
+			@Valid @RequestBody Livro livro) {
 		livro = livrosService.salvar(livro);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(livro.getId()).toUri();
 		return ResponseEntity.created(uri).build();
@@ -53,9 +52,8 @@ public class LivrosResources {
 
 	@ApiOperation("Lista os livros por ID")
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<?> buscar(
-			@ApiParam(name = "corpo", value = "busca um livro pelo ID") @PathVariable("id") Long id) {
-		Optional<Livro> livro = livrosService.buscar(id);
+	public ResponseEntity<?> buscar(@PathVariable("id") Long id) {
+		Livro livro = livrosService.buscar(id).get();
 
 		CacheControl cacheControl = CacheControl.maxAge(20, TimeUnit.SECONDS);
 
@@ -64,17 +62,14 @@ public class LivrosResources {
 
 	@ApiOperation("Deleta um livro")
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<Void> deletar(
-			@ApiParam(name = "corpo", value = "Deleta um livro pelo ID") @PathVariable("id") Long id) {
+	public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
 		livrosService.deletar(id);
 		return ResponseEntity.ok().build();
 	}
 
 	@ApiOperation("Atualiza um livro")
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Void> atualizar(
-			@ApiParam(name = "corpo", value = "Atualiza um livro pelo ID") @RequestBody Livro livro,
-			@PathVariable Long id) {
+	public ResponseEntity<Void> atualizar(@RequestBody Livro livro, @PathVariable Long id) {
 		livro.setId(id);
 		livrosService.atualizar(livro);
 
@@ -83,8 +78,7 @@ public class LivrosResources {
 
 	@ApiOperation("Adiciona um comentario a um livro")
 	@RequestMapping(value = "/{id}/comentarios", method = RequestMethod.POST)
-	public ResponseEntity<Void> adicionarComentario(
-			@ApiParam(name = "corpo", value = "Adiciona um comentario ao livro pelo ID") @PathVariable("id") Long livroId,
+	public ResponseEntity<Void> adicionarComentario(@PathVariable("id") Long livroId,
 			@RequestBody Comentario comentario) {
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -100,8 +94,7 @@ public class LivrosResources {
 
 	@ApiOperation("Lista os comentários de um livro")
 	@RequestMapping(value = "/{id}/comentarios", method = RequestMethod.GET)
-	public ResponseEntity<List<Comentario>> listarComentarios(
-			@ApiParam(name = "corpo", value = "Lista os comentários de um livro") @PathVariable("id") Long livroId) {
+	public ResponseEntity<List<Comentario>> listarComentarios(@PathVariable("id") Long livroId) {
 		List<Comentario> comentarios = livrosService.listarComentarios(livroId);
 		return ResponseEntity.status(HttpStatus.OK).body(comentarios);
 	}
